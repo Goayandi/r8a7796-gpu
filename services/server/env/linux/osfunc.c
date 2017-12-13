@@ -53,6 +53,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <linux/genalloc.h>
 #include <linux/string.h>
 #include <linux/sched.h>
+#include <linux/sched/clock.h>
 #include <asm/hardirq.h>
 #include <asm/tlbflush.h>
 #include <linux/timer.h>
