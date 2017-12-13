@@ -99,4 +99,6 @@ struct drm_pvr_dbgdrv_cmd {
 #define	DRM_IOCTL_PVR_SRVKM_CMD		DRM_IOWR(DRM_COMMAND_BASE + DRM_PVR_SRVKM_CMD, struct drm_pvr_srvkm_cmd)
 #define	DRM_IOCTL_PVR_DBGDRV_CMD	DRM_IOWR(DRM_COMMAND_BASE + DRM_PVR_DBGDRV_CMD, struct drm_pvr_dbgdrv_cmd)
 
+int pvr_drm_load(struct drm_device *ddev, unsigned long flags);
+
 #endif /* defined(__PVR_DRM_H__) */

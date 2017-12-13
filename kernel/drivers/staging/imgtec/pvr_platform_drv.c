@@ -50,6 +50,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "module_common.h"
 #include "pvr_drv.h"
+#include "pvr_drm.h"
 #include "pvrmodule.h"
 #include "sysinfo.h"
 
@@ -149,9 +150,25 @@ static void pvr_devices_unregister(void)
 
 static int pvr_probe(struct platform_device *pdev)
 {
+	struct drm_device *drm;
+	int result;
+
 	DRM_DEBUG_DRIVER("device %p\n", &pdev->dev);
 
-	return drm_platform_init(&pvr_drm_platform_driver, pdev);
+	drm = drm_dev_alloc(&pvr_drm_platform_driver, &pdev->dev);
+	if (IS_ERR(drm))
+		return PTR_ERR(drm);
+
+	platform_set_drvdata(pdev, drm);
+
+	result = pvr_drm_load(drm, 0);
+
+	if (result)
+		return result;
+
+	result = drm_dev_register(drm, 0);
+
+	return result;
 }
 
 static int pvr_remove(struct platform_device *pdev)

@@ -93,20 +93,13 @@ const struct dev_pm_ops pvr_pm_ops = {
 };
 
 
-static int pvr_drm_load(struct drm_device *ddev, unsigned long flags)
+int pvr_drm_load(struct drm_device *ddev, unsigned long flags)
 {
 	struct _PVRSRV_DEVICE_NODE_ *dev_node;
 	enum PVRSRV_ERROR srv_err;
 	int err;
 
 	DRM_DEBUG_DRIVER("device %p\n", ddev->dev);
-
-	/*
-	 * The equivalent is done for PCI modesetting drivers by
-	 * drm_get_pci_dev()
-	 */
-	if (ddev->platformdev)
-		platform_set_drvdata(ddev->platformdev, ddev);
 
 	srv_err = PVRSRVDeviceCreate(ddev->dev, &dev_node);
 	if (srv_err != PVRSRV_OK) {
@@ -132,18 +125,6 @@ err_device_destroy:
 	PVRSRVDeviceDestroy(dev_node);
 err_exit:
 	return err;
-}
-
-static int pvr_drm_unload(struct drm_device *ddev)
-{
-	DRM_DEBUG_DRIVER("device %p\n", ddev->dev);
-
-	PVRSRVCommonDeviceDeinit(ddev->dev_private);
-
-	PVRSRVDeviceDestroy(ddev->dev_private);
-	ddev->dev_private = NULL;
-
-	return 0;
 }
 
 static int pvr_drm_open(struct drm_device *ddev, struct drm_file *dfile)
@@ -237,8 +218,6 @@ const struct drm_driver pvr_drm_generic_driver = {
 	.driver_features	= DRIVER_MODESET | DRIVER_RENDER,
 
 	.dev_priv_size		= 0,
-	.load			= pvr_drm_load,
-	.unload			= pvr_drm_unload,
 	.open			= pvr_drm_open,
 	.postclose		= pvr_drm_release,
 
