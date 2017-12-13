@@ -492,7 +492,7 @@ static inline IMG_UINT64 KClockns64(void)
 {
 	ktime_t sTime = ktime_get();
 
-	return sTime.tv64;
+	return sTime;
 }
 
 PVRSRV_ERROR OSClockMonotonicns64(IMG_UINT64 *pui64Time)
@@ -1135,9 +1135,9 @@ static void OSTimerCallbackBody(TIMER_CALLBACK_DATA *psTimerCBData)
 @Description    OS specific timer callback wrapper function
 @Input          uData    Timer callback data
 */ /**************************************************************************/
-static void OSTimerCallbackWrapper(uintptr_t uData)
+static void OSTimerCallbackWrapper(struct timer_list *t)
 {
-	TIMER_CALLBACK_DATA	*psTimerCBData = (TIMER_CALLBACK_DATA*)uData;
+	TIMER_CALLBACK_DATA *psTimerCBData = from_timer(psTimerCBData, t, sTimer);
 
 #if defined(PVR_LINUX_TIMERS_USING_WORKQUEUES) || defined(PVR_LINUX_TIMERS_USING_SHARED_WORKQUEUE)
 	int res;
@@ -1219,12 +1219,8 @@ IMG_HANDLE OSAddTimer(PFN_TIMER_FUNC pfnTimerFunc, void *pvData, IMG_UINT32 ui32
 	psTimerCBData->ui32Delay = ((HZ * ui32MsTimeout) < 1000)
 								?	1
 								:	((HZ * ui32MsTimeout) / 1000);
-	/* initialise object */
-	init_timer(&psTimerCBData->sTimer);
-
 	/* setup timer object */
-	psTimerCBData->sTimer.function = (void *)OSTimerCallbackWrapper;
-	psTimerCBData->sTimer.data = (uintptr_t)psTimerCBData;
+	timer_setup(&psTimerCBData->sTimer, OSTimerCallbackWrapper, 0);
 
 	return (IMG_HANDLE)(uintptr_t)(ui32i + 1);
 }
